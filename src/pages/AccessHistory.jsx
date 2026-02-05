@@ -8,6 +8,7 @@ import {
   RiDeleteBin7Line,
 } from "react-icons/ri";
 import AdminLayout from "../layouts/AdminLayout";
+import clientAxios from "../api/clientAxios";
 
 const AccessHistory = () => {
   const [logs, setLogs] = useState([]);
@@ -17,8 +18,8 @@ const AccessHistory = () => {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await axios.get(
-          "http://localhost:5000/api/clients/history",
+        const res = await clientAxios.get(
+          "/clients/history",
           {
             headers: { "x-auth-token": token },
           },

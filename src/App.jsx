@@ -12,6 +12,7 @@ import CheckIn from "./pages/CheckIn";
 import ClientList from "./pages/ClientList";
 import ClientForm from "./pages/ClientForm";
 import AccessHistory from "./pages/AccessHistory";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -30,7 +31,7 @@ function App() {
         <Route path="/admin/historial" element={<AccessHistory />} />
 
         {/* Redirección por defecto */}
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="*" element={<NotFound/>} />
       </Routes>
     </Router>
   );

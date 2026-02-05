@@ -9,6 +9,7 @@ import {
   RiRefreshLine,
 } from "react-icons/ri";
 import AdminLayout from "../layouts/AdminLayout";
+import clientAxios from "../api/clientAxios";
 
 const ClientList = () => {
   const [clients, setClients] = useState([]);
@@ -22,7 +23,7 @@ const ClientList = () => {
 
   const fetchClients = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/clients", {
+      const res = await clientAxios.get("clients", {
         headers: { "x-auth-token": token },
       });
       setClients(res.data);
@@ -45,7 +46,7 @@ const ClientList = () => {
       if (result.isConfirmed) {
         try {
           // Nota: Asegúrate de tener la ruta DELETE en tu backend
-          await axios.delete(`http://localhost:5000/api/clients/${id}`, {
+          await clientAxios.delete(`/clients/${id}`, {
             headers: { "x-auth-token": token },
           });
           setClients(clients.filter((c) => c._id !== id));

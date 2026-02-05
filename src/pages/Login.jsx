@@ -6,6 +6,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { RiLockPasswordLine, RiUserLine } from "react-icons/ri";
 import logo from "../assets/logo.jpeg";
+import clientAxios from "../api/clientAxios";
 
 const Login = () => {
   const {
@@ -17,8 +18,8 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
+      const res = await clientAxios.post(
+        "/auth/login",
         data,
       );
       localStorage.setItem("token", res.data.token);

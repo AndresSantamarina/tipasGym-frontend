@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import logo from "../assets/logo.jpeg";
+import clientAxios from "../api/clientAxios";
 
 const CheckIn = () => {
   const { register, handleSubmit, reset } = useForm();
@@ -13,8 +14,8 @@ const CheckIn = () => {
   const onSubmit = async (data) => {
     try {
       setError(null);
-      const res = await axios.get(
-        `http://localhost:5000/api/clients/check/${data.dni}`,
+      const res = await clientAxios.get(
+        `/clients/check/${data.dni}`,
       );
       setCliente(res.data);
       reset(); // Limpiar input para el próximo

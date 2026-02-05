@@ -9,6 +9,7 @@ import {
   RiPieChartLine,
 } from "react-icons/ri";
 import { motion } from "framer-motion";
+import clientAxios from "../api/clientAxios";
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -23,7 +24,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/clients/stats", {
+        const res = await clientAxios.get("/clients/stats", {
           headers: { "x-auth-token": token },
         });
         setStats(res.data);

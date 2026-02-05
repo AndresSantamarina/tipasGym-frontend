@@ -5,6 +5,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { RiLockPasswordLine, RiUserAddLine } from "react-icons/ri";
 import logo from "../assets/logo.jpeg";
+import clientAxios from "../api/clientAxios";
 
 const Register = () => {
   const {
@@ -16,7 +17,7 @@ const Register = () => {
 
   const onSubmit = async (data) => {
     try {
-      await axios.post("http://localhost:5000/api/auth/register", data);
+      await clientAxios.post("/auth/register", data);
 
       Swal.fire({
         icon: "success",
@@ -83,7 +84,10 @@ const Register = () => {
               type="password"
               {...register("password", {
                 required: "Campo obligatorio",
-                minLength: 6,
+                minLength: {
+                  value: 6,
+                  message: "La contraseña debe tener al menos 6 caracteres", // <--- Aquí el mensaje
+                },
               })}
               className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#659d3a] outline-none"
               placeholder="••••••••"

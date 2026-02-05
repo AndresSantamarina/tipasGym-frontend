@@ -4,6 +4,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import AdminLayout from "../layouts/AdminLayout";
 import { RiSaveLine, RiArrowGoBackLine } from "react-icons/ri";
+import clientAxios from "../api/clientAxios";
 
 const ClientForm = () => {
   const { id } = useParams(); // Para saber si editamos
@@ -26,12 +27,12 @@ const ClientForm = () => {
   const onSubmit = async (data) => {
     try {
       if (isEdit) {
-        await axios.put(`http://localhost:5000/api/clients/${id}`, data, {
+        await clientAxios.put(`/clients/${id}`, data, {
           headers: { "x-auth-token": token },
         });
         Swal.fire("¡Actualizado!", "Datos guardados correctamente", "success");
       } else {
-        await axios.post("http://localhost:5000/api/clients", data, {
+        await clientAxios.post("/clients", data, {
           headers: { "x-auth-token": token },
         });
         Swal.fire("¡Creado!", "Nuevo socio registrado por 30 días", "success");
