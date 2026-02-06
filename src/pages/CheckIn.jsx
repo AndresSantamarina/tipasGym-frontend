@@ -1,8 +1,6 @@
-// src/pages/CheckIn.jsx
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
 import logo from "../assets/logo.jpeg";
 import clientAxios from "../api/clientAxios";
 
@@ -14,17 +12,15 @@ const CheckIn = () => {
   const onSubmit = async (data) => {
     try {
       setError(null);
-      const res = await clientAxios.get(
-        `/clients/check/${data.dni}`,
-      );
-      setCliente(res.data);
-      reset(); // Limpiar input para el próximo
+      const res = await clientAxios.get(`/clients/check/${data.dni}`);
 
-      // Auto-limpiar el mensaje después de 5 segundos
-      setTimeout(() => setCliente(null), 5000);
+      setCliente(res.data);
+      reset();
     } catch (err) {
+      setCliente(null);
       setError(err.response?.data?.msg || "Error al consultar");
       setTimeout(() => setError(null), 3000);
+      reset();
     }
   };
 

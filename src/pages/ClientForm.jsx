@@ -1,18 +1,15 @@
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import axios from "axios";
 import Swal from "sweetalert2";
 import AdminLayout from "../layouts/AdminLayout";
 import { RiSaveLine, RiArrowGoBackLine } from "react-icons/ri";
 import clientAxios from "../api/clientAxios";
 
 const ClientForm = () => {
-  const { id } = useParams(); // Para saber si editamos
-  const location = useLocation(); // Para traer datos si vienen de la lista
+  const { id } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
 
-  // Si estamos editando, cargamos los valores por defecto
   const isEdit = Boolean(id);
   const {
     register,
@@ -21,21 +18,30 @@ const ClientForm = () => {
   } = useForm({
     defaultValues: isEdit
       ? location.state
-      : { servicios: { gym: true, natacion: false } },
+      : {
+          nombre: "",
+          dni: "",
+          servicios: { gym: "No", natacion: "No" },
+        },
   });
 
   const onSubmit = async (data) => {
     try {
+      const payload = {
+        nombre: data.nombre,
+        dni: data.dni,
+        servicios: {
+          gym: data.servicios.gym,
+          natacion: data.servicios.natacion,
+        },
+      };
+
       if (isEdit) {
-        await clientAxios.put(`/clients/${id}`, data, {
-          headers: { "x-auth-token": token },
-        });
-        Swal.fire("¡Actualizado!", "Datos guardados correctamente", "success");
+        await clientAxios.put(`/clients/${id}`, payload);
+        Swal.fire("¡Actualizado!", "Datos guardados", "success");
       } else {
-        await clientAxios.post("/clients", data, {
-          headers: { "x-auth-token": token },
-        });
-        Swal.fire("¡Creado!", "Nuevo socio registrado por 30 días", "success");
+        await clientAxios.post("/clients", payload);
+        Swal.fire("¡Creado!", "Socio registrado por 30 días", "success");
       }
       navigate("/admin/clientes");
     } catch (error) {
@@ -88,7 +94,7 @@ const ClientForm = () => {
                 <input
                   {...register("dni", { required: "El DNI es obligatorio" })}
                   className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#659d3a] outline-none"
-                  disabled={isEdit} // Normalmente el DNI no se cambia
+                  disabled={isEdit}
                 />
                 {errors.dni && (
                   <p className="text-red-500 text-xs mt-1">
@@ -103,7 +109,6 @@ const ClientForm = () => {
                 Servicios contratados
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* OPCIONES DE GIMNASIO */}
                 <div className="bg-[#fbf4e4] p-5 rounded-2xl border border-gray-100">
                   <label className="block text-[#223c1f] font-black mb-3 uppercase text-xs tracking-widest">
                     Gimnasio
@@ -128,7 +133,6 @@ const ClientForm = () => {
                   </div>
                 </div>
 
-                {/* OPCIONES DE NATACIÓN */}
                 <div className="bg-[#fbf4e4] p-5 rounded-2xl border border-gray-100">
                   <label className="block text-[#223c1f] font-black mb-3 uppercase text-xs tracking-widest">
                     Natación

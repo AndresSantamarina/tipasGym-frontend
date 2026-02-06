@@ -1,4 +1,3 @@
-// src/components/Sidebar.jsx
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   RiDashboardLine,
@@ -8,7 +7,6 @@ import {
   RiLogoutBoxRLine,
   RiHistoryLine,
 } from "react-icons/ri";
-import { motion } from "framer-motion";
 import logo from "../assets/logo.jpeg";
 
 const Sidebar = () => {

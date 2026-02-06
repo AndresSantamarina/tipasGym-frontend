@@ -1,4 +1,3 @@
-// src/layouts/AdminLayout.jsx
 import Sidebar from "../components/Sidebar";
 import { motion } from "framer-motion";
 

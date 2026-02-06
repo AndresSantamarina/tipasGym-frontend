@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import AdminLayout from "../layouts/AdminLayout";
 import {
   RiUserSharedLine,
@@ -69,7 +68,6 @@ const Dashboard = () => {
         <p className="text-gray-600">Resumen general del estado del gimnasio</p>
       </div>
 
-      {/* Tarjetas Principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         {cards.map((card, index) => (
           <motion.div
@@ -94,9 +92,7 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Sección de Análisis */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Porcentaje de Vencidos */}
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
           <div className="flex items-center gap-3 mb-6">
             <RiPieChartLine className="text-2xl text-[#659d3a]" />
@@ -107,7 +103,6 @@ const Dashboard = () => {
 
           <div className="flex flex-col items-center justify-center py-4">
             <div className="relative size-48 mb-6">
-              {/* Un gráfico circular simple con CSS */}
               <svg className="size-full" viewBox="0 0 36 36">
                 <path
                   className="stroke-gray-100"
@@ -141,7 +136,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Mensaje de Bienvenida / Tips */}
         <div className="bg-[#223c1f] p-8 rounded-3xl text-[#fbf4e4] flex flex-col justify-center shadow-2xl relative overflow-hidden">
           <div className="relative z-10">
             <h2 className="text-3xl font-bold mb-4">¡Hola, Administrador!</h2>
@@ -166,7 +160,6 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-          {/* Un detalle decorativo atrás */}
           <div className="absolute -right-10 -bottom-10 size-40 bg-[#659d3a] opacity-20 rounded-full"></div>
         </div>
       </div>

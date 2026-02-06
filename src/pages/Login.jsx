@@ -1,8 +1,6 @@
-// src/pages/Login.jsx
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import axios from "axios";
 import Swal from "sweetalert2";
 import { RiLockPasswordLine, RiUserLine } from "react-icons/ri";
 import logo from "../assets/logo.jpeg";
@@ -18,10 +16,7 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      const res = await clientAxios.post(
-        "/auth/login",
-        data,
-      );
+      const res = await clientAxios.post("/auth/login", data);
       localStorage.setItem("token", res.data.token);
 
       Swal.fire({
