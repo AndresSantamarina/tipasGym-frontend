@@ -283,12 +283,14 @@ const ClientList = () => {
                           state: client,
                         })
                       }
+                      title="Editar cliente"
                       className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                     >
                       <RiEditLine size={20} />
                     </button>
                     <button
                       onClick={() => handleDelete(client._id)}
+                      title="Eliminar cliente"
                       className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     >
                       <RiDeleteBin7Line size={20} />

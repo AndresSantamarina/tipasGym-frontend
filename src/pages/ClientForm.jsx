@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import AdminLayout from "../layouts/AdminLayout";
-import { RiSaveLine, RiArrowGoBackLine } from "react-icons/ri";
+import { RiSaveLine } from "react-icons/ri";
 import clientAxios from "../api/clientAxios";
 
 const ClientForm = () => {
@@ -33,6 +33,16 @@ const ClientForm = () => {
   });
 
   const onSubmit = async (data) => {
+
+    if (data.servicios.gym === "No" && data.servicios.natacion === "No") {
+      return Swal.fire({
+        icon: "error",
+        title: "Selección requerida",
+        text: "Debes elegir al menos un servicio (Gimnasio o Natación) para registrar al socio.",
+        confirmButtonColor: "#223c1f",
+      });
+    }
+    
     try {
       const payload = {
         nombre: data.nombre,
@@ -63,13 +73,6 @@ const ClientForm = () => {
   return (
     <AdminLayout>
       <div className="max-w-2xl mx-auto">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-[#223c1f] mb-6 font-bold hover:underline"
-        >
-          <RiArrowGoBackLine /> Volver
-        </button>
-
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
           <h2 className="text-2xl font-bold text-[#223c1f] mb-8">
             {isEdit ? "Editar Socio" : "Registrar Nuevo Socio"}
@@ -99,7 +102,15 @@ const ClientForm = () => {
                   DNI
                 </label>
                 <input
-                  {...register("dni", { required: "El DNI es obligatorio" })}
+                  {...register("dni", {
+                    required: "El DNI es obligatorio",
+                    pattern: {
+                      value: /^[0-9]{8}$/,
+                      message: "El DNI debe tener exactamente 8 números",
+                    },
+                  })}
+                  type="text"
+                  maxLength={8}
                   className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#659d3a] outline-none"
                 />
                 {errors.dni && (
