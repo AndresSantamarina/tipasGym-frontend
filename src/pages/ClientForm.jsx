@@ -9,15 +9,22 @@ const ClientForm = () => {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-
   const isEdit = Boolean(id);
+  const getInitialValue = (serviceData) => serviceData?.modalidad || "No";
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm({
     defaultValues: isEdit
-      ? location.state
+      ? {
+          nombre: location.state.nombre,
+          dni: location.state.dni,
+          servicios: {
+            gym: getInitialValue(location.state.servicios.gym),
+            natacion: getInitialValue(location.state.servicios.natacion),
+          },
+        }
       : {
           nombre: "",
           dni: "",
@@ -31,8 +38,8 @@ const ClientForm = () => {
         nombre: data.nombre,
         dni: data.dni,
         servicios: {
-          gym: data.servicios.gym,
-          natacion: data.servicios.natacion,
+          gym: { modalidad: data.servicios.gym },
+          natacion: { modalidad: data.servicios.natacion },
         },
       };
 
@@ -94,7 +101,6 @@ const ClientForm = () => {
                 <input
                   {...register("dni", { required: "El DNI es obligatorio" })}
                   className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#659d3a] outline-none"
-                  disabled={isEdit}
                 />
                 {errors.dni && (
                   <p className="text-red-500 text-xs mt-1">

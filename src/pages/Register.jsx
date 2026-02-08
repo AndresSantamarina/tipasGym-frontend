@@ -24,7 +24,7 @@ const Register = () => {
         confirmButtonColor: "#659d3a",
       });
 
-      navigate("/login");
+      navigate("/");
     } catch (error) {
       Swal.fire({
         icon: "error",

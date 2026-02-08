@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { HiHome, HiExclamationCircle } from "react-icons/hi";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 const NotFound = () => {
+  const { token } = useContext(AuthContext);
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="max-w-lg w-full text-center">
@@ -58,7 +61,7 @@ const NotFound = () => {
           whileTap={{ scale: 0.95 }}
         >
           <Link
-            to="/admin/dashboard"
+            to={token ? "/admin/dashboard" : "/"}
             className="inline-flex items-center gap-2 bg-[#283d29] text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-black transition-colors"
           >
             <HiHome className="text-xl" />

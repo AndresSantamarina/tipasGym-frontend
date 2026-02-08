@@ -8,24 +8,84 @@ import ClientList from "./pages/ClientList";
 import ClientForm from "./pages/ClientForm";
 import AccessHistory from "./pages/AccessHistory";
 import NotFound from "./pages/NotFound";
+import PublicRoute from "./components/PublicRoute";
+import { AuthProvider } from "./context/AuthContext";
+import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/check-in" element={<CheckIn />} />
-
-        <Route path="/admin/dashboard" element={<Dashboard />} />
-        <Route path="/admin/clientes" element={<ClientList />} />
-        <Route path="/admin/nuevo-cliente" element={<ClientForm />} />
-        <Route path="/admin/editar/:id" element={<ClientForm />} />
-        <Route path="/admin/historial" element={<AccessHistory />} />
-
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <Register />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/check-in"
+            element={
+              <PrivateRoute>
+                <CheckIn />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/clientes"
+            element={
+              <PrivateRoute>
+                <ClientList />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/nuevo-cliente"
+            element={
+              <PrivateRoute>
+                {" "}
+                <ClientForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/editar/:id"
+            element={
+              <PrivateRoute>
+                <ClientForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/historial"
+            element={
+              <PrivateRoute>
+                <AccessHistory />
+              </PrivateRoute>
+            }
+          />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 

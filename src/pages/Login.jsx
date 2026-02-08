@@ -5,8 +5,11 @@ import Swal from "sweetalert2";
 import { RiLockPasswordLine, RiUserLine } from "react-icons/ri";
 import logo from "../assets/logo.jpeg";
 import clientAxios from "../api/clientAxios";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 const Login = () => {
+  const { login } = useContext(AuthContext);
   const {
     register,
     handleSubmit,
@@ -17,7 +20,7 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       const res = await clientAxios.post("/auth/login", data);
-      localStorage.setItem("token", res.data.token);
+      login(res.data.admin, res.data.token);
 
       Swal.fire({
         icon: "success",

@@ -31,6 +31,23 @@ const AccessHistory = () => {
     fetchHistory();
   }, [token]);
 
+  const RenderDate = ({ date, label }) => {
+    if (!date) return null;
+    const isExpired = new Date(date) < new Date();
+    return (
+      <div
+        className={`text-[10px] flex justify-between gap-2 px-2 py-0.5 rounded mb-1 ${
+          isExpired
+            ? "bg-red-50 text-red-600 border border-red-100"
+            : "bg-green-50 text-green-700 border border-green-100"
+        }`}
+      >
+        <span className="font-bold">{label}:</span>
+        <span>{new Date(date).toLocaleDateString()}</span>
+      </div>
+    );
+  };
+
   const filteredLogs = logs.filter(
     (log) =>
       log.nombre.toLowerCase().includes(searchDni.toLowerCase()) ||
@@ -105,7 +122,10 @@ const AccessHistory = () => {
                 <th className="p-5 font-semibold">DNI</th>
                 <th className="p-5 font-semibold">Fecha</th>
                 <th className="p-5 font-semibold">Hora</th>
-                <th className="p-5 font-semibold">Estado de Socio</th>
+                <th className="p-5 font-semibold text-sm">
+                  Servicios Contratados
+                </th>
+                <th className="p-5 font-semibold">Vencimientos</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -118,38 +138,65 @@ const AccessHistory = () => {
                     <td className="p-5 font-bold text-[#223c1f]">
                       {log.nombre}
                     </td>
-                    <td className="p-5 text-gray-500 font-medium">{log.dni}</td>
-                    <td className="p-5">
-                      <div className="flex items-center gap-2 text-gray-700">
+                    <td className="p-5 text-gray-500">{log.dni}</td>
+                    <td className="p-5 text-gray-700">
+                      <span className="flex items-center gap-1">
                         <RiCalendarLine className="text-[#659d3a]" />
                         {new Date(log.fecha).toLocaleDateString()}
-                      </div>
+                      </span>
                     </td>
-                    <td className="p-5">
-                      <div className="flex items-center gap-2 text-gray-700">
+                    <td className="p-5 text-gray-700">
+                      <span className="flex items-center gap-1 font-bold">
                         <RiTimeLine className="text-[#659d3a]" />
                         {new Date(log.fecha).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
-                        })}
+                        })}{" "}
+                        hs
+                      </span>
+                    </td>
+                    <td className="p-5">
+                      <div className="flex flex-col gap-1 items-start">
+                        {log.clientDetails?.servicios?.gym?.modalidad !==
+                          "No" && (
+                          <span className="text-[10px] bg-[#659d3a]/10 text-[#659d3a] px-2 py-0.5 rounded-md font-bold border border-[#659d3a]/20">
+                            GYM ({log.clientDetails.servicios.gym.modalidad})
+                          </span>
+                        )}
+                        {log.clientDetails?.servicios?.natacion?.modalidad !==
+                          "No" && (
+                          <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md font-bold border border-blue-200">
+                            NATA (
+                            {log.clientDetails.servicios.natacion.modalidad})
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="p-5">
-                      <span
-                        className={`px-4 py-1.5 rounded-full text-xs font-black tracking-wider ${
-                          log.statusAlIngresar === "ACTIVO"
-                            ? "bg-[#659d3a]/20 text-[#659d3a]"
-                            : "bg-red-100 text-red-600"
-                        }`}
-                      >
-                        {log.statusAlIngresar}
-                      </span>
+                      <div className="w-48">
+                        {log.clientDetails?.servicios?.gym?.modalidad !==
+                          "No" && (
+                          <RenderDate
+                            date={log.clientDetails.servicios.gym.vencimiento}
+                            label="GYM"
+                          />
+                        )}
+                        {log.clientDetails?.servicios?.natacion?.modalidad !==
+                          "No" && (
+                          <RenderDate
+                            date={
+                              log.clientDetails.servicios.natacion.vencimiento
+                            }
+                            label="NATA"
+                          />
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="p-20 text-center">
+                  <td colSpan="6" className="p-20 text-center">
                     <div className="flex flex-col items-center gap-2 text-gray-400">
                       <RiSearchLine size={40} className="opacity-20" />
                       <p className="text-lg font-medium">

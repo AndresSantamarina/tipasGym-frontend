@@ -5,7 +5,12 @@ import logo from "../assets/logo.jpeg";
 import clientAxios from "../api/clientAxios";
 
 const CheckIn = () => {
-  const { register, handleSubmit, reset } = useForm();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
   const [cliente, setCliente] = useState(null);
   const [error, setError] = useState(null);
 
@@ -24,6 +29,20 @@ const CheckIn = () => {
     }
   };
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "ACTIVO TOTAL":
+      case "SOLO GYM":
+      case "SOLO NATACIÓN":
+        return "bg-[#659d3a]";
+      case "ACTIVO PARCIAL":
+        return "bg-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.4)]";
+      case "VENCIDO":
+      default:
+        return "bg-red-500 shadow-[0_0_20px_rgba(239,68,68,0.4)]";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#fbf4e4] flex flex-col items-center justify-center p-4">
       <img
@@ -39,11 +58,27 @@ const CheckIn = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="mb-8">
           <input
-            {...register("dni", { required: true })}
-            className="w-full text-center text-4xl p-4 rounded-2xl border-2 border-gray-200 focus:border-[#659d3a] outline-none transition-all mb-4"
+            {...register("dni", {
+              required: "El DNI es obligatorio",
+              pattern: {
+                value: /^[0-9]{8}$/,
+                message: "El DNI debe tener exactamente 8 números",
+              },
+            })}
+            type="text"
+            maxLength={8}
+            className={`w-full text-center text-4xl p-4 rounded-2xl border-2 outline-none transition-all mb-4 ${
+              errors.dni
+                ? "border-red-500"
+                : "border-gray-200 focus:border-[#659d3a]"
+            }`}
             placeholder="INGRESE SU DNI"
             autoFocus
+            autoComplete="off"
           />
+          {errors.dni && (
+            <p className="text-red-500 font-bold mb-4">{errors.dni.message}</p>
+          )}
           <button className="w-full bg-[#223c1f] text-white py-4 rounded-2xl text-xl font-bold hover:bg-[#659d3a] transition-all">
             INGRESAR
           </button>
@@ -54,36 +89,70 @@ const CheckIn = () => {
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className={`p-6 rounded-3xl text-white ${cliente.status === "ACTIVO" ? "bg-[#659d3a]" : "bg-red-500 shadow-[0_0_20px_rgba(239,68,68,0.4)]"}`}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className={`p-6 rounded-3xl text-white ${getStatusColor(cliente.statusGlobal)}`}
             >
-              <h2 className="text-5xl font-black mb-4 tracking-tighter">
-                {cliente.status}
+              <h2 className="text-4xl font-black mb-2 tracking-tighter uppercase">
+                {cliente.statusGlobal}
               </h2>
               <p className="text-2xl uppercase font-medium border-b border-white/20 pb-4 mb-4">
                 {cliente.nombre}
               </p>
 
-              <div className="space-y-2 text-left bg-black/10 p-4 rounded-xl">
-                <p className="text-sm font-bold uppercase opacity-80">
-                  Suscripción:
-                </p>
-                {cliente.servicios.gym !== "No" && (
-                  <p className="flex justify-between">
-                    <span>🏋️ Gimnasio:</span>{" "}
-                    <strong>{cliente.servicios.gym}</strong>
-                  </p>
+              <div className="space-y-3 text-left bg-black/10 p-4 rounded-xl">
+                {cliente?.servicios?.gym?.modalidad !== "No" && (
+                  <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                    <div>
+                      <p className="font-bold flex items-center gap-2">
+                        🏋️ GIMNASIO
+                      </p>
+                      <p className="text-xs opacity-80">
+                        {cliente.servicios.gym.modalidad}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span
+                        className={`text-xs px-2 py-1 rounded font-bold ${cliente.servicios.gym.activo ? "bg-white text-green-700" : "bg-red-600 text-white"}`}
+                      >
+                        {cliente.servicios.gym.activo ? "AL DÍA" : "VENCIDO"}
+                      </span>
+                      <p className="text-[10px] mt-1">
+                        Vence:{" "}
+                        {new Date(
+                          cliente.servicios.gym.vencimiento,
+                        ).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
                 )}
-                {cliente.servicios.natacion !== "No" && (
-                  <p className="flex justify-between">
-                    <span>🏊 Natación:</span>{" "}
-                    <strong>{cliente.servicios.natacion}</strong>
-                  </p>
+                {cliente?.servicios?.natacion?.modalidad !== "No" && (
+                  <div className="flex justify-between items-center pt-1">
+                    <div>
+                      <p className="font-bold flex items-center gap-2">
+                        🏊 NATACIÓN
+                      </p>
+                      <p className="text-xs opacity-80">
+                        {cliente.servicios.natacion.modalidad}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span
+                        className={`text-xs px-2 py-1 rounded font-bold ${cliente.servicios.natacion.activo ? "bg-white text-blue-700" : "bg-red-600 text-white"}`}
+                      >
+                        {cliente.servicios.natacion.activo
+                          ? "AL DÍA"
+                          : "VENCIDO"}
+                      </span>
+                      <p className="text-[10px] mt-1">
+                        Vence:{" "}
+                        {new Date(
+                          cliente.servicios.natacion.vencimiento,
+                        ).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
                 )}
               </div>
-
-              <p className="mt-4 text-sm font-bold">
-                VENCE: {new Date(cliente.vence).toLocaleDateString()}
-              </p>
             </motion.div>
           )}
 
@@ -91,7 +160,8 @@ const CheckIn = () => {
             <motion.p
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="text-red-500 font-bold text-xl"
+              exit={{ opacity: 0 }}
+              className="text-red-500 font-bold text-xl mt-4"
             >
               {error}
             </motion.p>

@@ -6,17 +6,30 @@ import {
   RiUserFollowLine,
   RiLoginBoxLine,
   RiPieChartLine,
+  RiRunLine,
+  RiDropLine,
 } from "react-icons/ri";
 import { motion } from "framer-motion";
 import clientAxios from "../api/clientAxios";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     total: 0,
     activos: 0,
+    activosGym: 0,
+    activosNatacion: 0,
     vencidos: 0,
     ingresosHoy: 0,
-    porcentajeVencidos: 0,
+    semaforo: {
+      verde: 0,
+      amarillo: 0,
+      rojo: 0,
+      pVerde: 0,
+      pAmarillo: 0,
+      pRojo: 0,
+    },
   });
   const token = localStorage.getItem("token");
 
@@ -40,24 +53,42 @@ const Dashboard = () => {
       value: stats.total,
       icon: <RiUserSharedLine />,
       color: "bg-blue-500",
+      filter: "Todos",
     },
     {
       label: "Socios Activos",
       value: stats.activos,
       icon: <RiUserFollowLine />,
       color: "bg-[#659d3a]",
+      filter: "Activos",
+    },
+    {
+      label: "Activos Gym",
+      value: stats.activosGym,
+      icon: <RiRunLine />,
+      color: "bg-orange-500",
+      filter: "Gym",
+    },
+    {
+      label: "Activos Natación",
+      value: stats.activosNatacion,
+      icon: <RiDropLine />,
+      color: "bg-cyan-500",
+      filter: "Natacion",
     },
     {
       label: "Cuotas Vencidas",
       value: stats.vencidos,
       icon: <RiUserUnfollowLine />,
       color: "bg-red-500",
+      filter: "Vencidos",
     },
     {
       label: "Ingresos Hoy",
       value: stats.ingresosHoy,
       icon: <RiLoginBoxLine />,
       color: "bg-[#223c1f]",
+      path: "/admin/historial",
     },
   ];
 
@@ -68,14 +99,27 @@ const Dashboard = () => {
         <p className="text-gray-600">Resumen general del estado del gimnasio</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
         {cards.map((card, index) => (
           <motion.div
             key={index}
+            onClick={() => {
+              if (card.path) {
+                navigate(card.path);
+              } else {
+                navigate("/admin/clientes", { state: { filter: card.filter } });
+              }
+            }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4"
+            whileHover={{
+              y: -5,
+              scale: 1.02,
+              transition: { duration: 0.2 },
+            }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow duration-300"
           >
             <div
               className={`${card.color} p-4 rounded-2xl text-white text-3xl shadow-lg`}
@@ -101,41 +145,61 @@ const Dashboard = () => {
             </h3>
           </div>
 
-          <div className="flex flex-col items-center justify-center py-4">
-            <div className="relative size-48 mb-6">
-              <svg className="size-full" viewBox="0 0 36 36">
-                <path
-                  className="stroke-gray-100"
-                  strokeWidth="3"
-                  fill="none"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-                <path
-                  className="stroke-red-500"
-                  strokeWidth="3"
-                  strokeDasharray={`${stats.porcentajeVencidos}, 100`}
-                  strokeLinecap="round"
-                  fill="none"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-black text-red-500">
-                  {stats.porcentajeVencidos}%
-                </span>
-                <span className="text-[10px] text-gray-400 font-bold uppercase">
-                  Vencidos
-                </span>
+          <div className="flex flex-col items-center">
+            <div className="w-full h-12 bg-gray-100 rounded-2xl overflow-hidden flex mb-8 shadow-inner">
+              <div
+                style={{ width: `${stats.semaforo.pVerde}%` }}
+                className="bg-[#659d3a] h-full transition-all duration-1000 flex items-center justify-center text-white text-[10px] font-bold"
+              >
+                {stats.semaforo.pVerde > 10 && `${stats.semaforo.pVerde}%`}
+              </div>
+              <div
+                style={{ width: `${stats.semaforo.pAmarillo}%` }}
+                className="bg-yellow-400 h-full transition-all duration-1000 flex items-center justify-center text-yellow-900 text-[10px] font-bold"
+              >
+                {stats.semaforo.pAmarillo > 10 &&
+                  `${stats.semaforo.pAmarillo}%`}
+              </div>
+              <div
+                style={{ width: `${stats.semaforo.pRojo}%` }}
+                className="bg-red-500 h-full transition-all duration-1000 flex items-center justify-center text-white text-[10px] font-bold"
+              >
+                {stats.semaforo.pRojo > 10 && `${stats.semaforo.pRojo}%`}
               </div>
             </div>
-            <p className="text-center text-gray-500 text-sm italic">
-              {stats.vencidos > 0
-                ? `Hay ${stats.vencidos} socios con la cuota impaga o vencida.`
-                : "¡Excelente! Todos los socios están al día."}
+            <div className="grid grid-cols-3 gap-4 w-full">
+              <div className="text-center p-3 rounded-2xl bg-green-50 border border-green-100">
+                <p className="text-[#659d3a] font-black text-xl">
+                  {stats.semaforo.verde}
+                </p>
+                <p className="text-[10px] text-gray-500 uppercase font-bold">
+                  Al día
+                </p>
+              </div>
+              <div className="text-center p-3 rounded-2xl bg-yellow-50 border border-yellow-100">
+                <p className="text-yellow-600 font-black text-xl">
+                  {stats.semaforo.amarillo}
+                </p>
+                <p className="text-[10px] text-gray-500 uppercase font-bold">
+                  Parcial
+                </p>
+              </div>
+              <div className="text-center p-3 rounded-2xl bg-red-50 border border-red-100">
+                <p className="text-red-500 font-black text-xl">
+                  {stats.semaforo.rojo}
+                </p>
+                <p className="text-[10px] text-gray-500 uppercase font-bold">
+                  Deuda Total
+                </p>
+              </div>
+            </div>
+
+            <p className="mt-6 text-center text-gray-400 text-xs italic">
+              Se consideran "Parciales" a los socios con Gym o Natación vencido
+              pero el otro activo.
             </p>
           </div>
         </div>
-
         <div className="bg-[#223c1f] p-8 rounded-3xl text-[#fbf4e4] flex flex-col justify-center shadow-2xl relative overflow-hidden">
           <div className="relative z-10">
             <h2 className="text-3xl font-bold mb-4">¡Hola, Administrador!</h2>

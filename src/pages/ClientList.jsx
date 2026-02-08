@@ -10,11 +10,15 @@ import {
 } from "react-icons/ri";
 import AdminLayout from "../layouts/AdminLayout";
 import clientAxios from "../api/clientAxios";
+import { useLocation } from "react-router-dom";
 
 const ClientList = () => {
+  const location = useLocation();
   const [clients, setClients] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [serviceFilter, setServiceFilter] = useState("Todos");
+  const [serviceFilter, setServiceFilter] = useState(
+    location.state?.filter || "Todos",
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const navigate = useNavigate();
@@ -55,42 +59,86 @@ const ClientList = () => {
     });
   };
 
-  const handleRenew = async (id) => {
-    Swal.fire({
-      title: "¿Renovar suscripción?",
-      text: "Se sumarán 30 días de acceso.",
-      icon: "question",
+  const handleRenew = async (client) => {
+    const inputOptions = {};
+    if (client.servicios.gym.modalidad !== "No") {
+      inputOptions.gym = "🏋️ Gimnasio";
+    }
+    if (client.servicios.natacion.modalidad !== "No") {
+      inputOptions.natacion = "🏊 Natación";
+    }
+
+    if (Object.keys(inputOptions).length === 0) {
+      Swal.fire("Error", "Este cliente no tiene servicios activos", "info");
+      return;
+    }
+    const { value: servicioSeleccionado } = await Swal.fire({
+      title: "Renovar Suscripción",
+      text: "Selecciona qué servicio quieres renovar por 30 días:",
+      input: "radio",
+      inputOptions: inputOptions,
+      inputValidator: (value) => {
+        if (!value) {
+          return "Debes seleccionar una opción";
+        }
+      },
       showCancelButton: true,
       confirmButtonColor: "#659d3a",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "Sí, renovar",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const res = await clientAxios.put(`/clients/renew/${id}`);
-          setClients(clients.map((c) => (c._id === id ? res.data.client : c)));
-          Swal.fire("¡Renovado!", "Fecha actualizada con éxito", "success");
-        } catch (error) {
-          Swal.fire("Error", "No se pudo renovar", "error");
-        }
-      }
+      confirmButtonText: "Renovar",
     });
+
+    if (servicioSeleccionado) {
+      try {
+        const res = await clientAxios.put(`/clients/renew/${client._id}`, {
+          servicio: servicioSeleccionado,
+        });
+        setClients((prevClients) =>
+          prevClients.map((c) => (c._id === client._id ? res.data.client : c)),
+        );
+        Swal.fire({
+          title: "¡Renovado!",
+          text: res.data.msg,
+          icon: "success",
+          confirmButtonColor: "#659d3a",
+        });
+      } catch (error) {
+        Swal.fire("Error", "No se pudo procesar la renovación", "error");
+      }
+    }
   };
 
   const filteredClients = clients.filter((c) => {
+    const hoy = new Date();
     const matchesSearch =
       c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.dni.includes(searchTerm);
+    const hasGym = c.servicios.gym.modalidad !== "No";
+    const hasNata = c.servicios.natacion.modalidad !== "No";
+    const gymVencido =
+      hasGym &&
+      (!c.servicios.gym.vencimiento ||
+        new Date(c.servicios.gym.vencimiento) < hoy);
+    const nataVencida =
+      hasNata &&
+      (!c.servicios.natacion.vencimiento ||
+        new Date(c.servicios.natacion.vencimiento) < hoy);
+    const gymActivo = hasGym && !gymVencido;
+    const nataActiva = hasNata && !nataVencida;
 
-    const hasGym = c.servicios.gym !== "No";
-    const hasNata = c.servicios.natacion !== "No";
+    let matchesFilter = true;
 
-    let matchesService = true;
-    if (serviceFilter === "Gym") matchesService = hasGym;
-    if (serviceFilter === "Natacion") matchesService = hasNata;
-    if (serviceFilter === "Ambos") matchesService = hasGym && hasNata;
-
-    return matchesSearch && matchesService;
+    if (serviceFilter === "Gym") matchesFilter = gymActivo;
+    if (serviceFilter === "Natacion") matchesFilter = nataActiva;
+    if (serviceFilter === "Ambos") matchesFilter = hasGym && hasNata;
+    if (serviceFilter === "Activos") {
+      const totalContratados = (hasGym ? 1 : 0) + (hasNata ? 1 : 0);
+      const totalActivos = (gymActivo ? 1 : 0) + (nataActiva ? 1 : 0);
+      matchesFilter = totalContratados > 0 && totalActivos === totalContratados;
+    }
+    if (serviceFilter === "Vencidos") {
+      matchesFilter = gymVencido || nataVencida;
+    }
+    return matchesSearch && matchesFilter;
   });
 
   const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
@@ -101,10 +149,27 @@ const ClientList = () => {
     indexOfLastItem,
   );
 
+  const RenderDate = ({ date, label }) => {
+    if (!date) return null;
+    const isExpired = new Date(date) < new Date();
+    return (
+      <div
+        className={`text-xs flex justify-between gap-2 px-2 py-1 rounded ${isExpired ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"}`}
+      >
+        <span className="font-bold">{label}:</span>
+        <span>{new Date(date).toLocaleDateString()}</span>
+      </div>
+    );
+  };
+
   return (
     <AdminLayout>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <h1 className="text-3xl font-bold text-[#223c1f]">Gestión de Socios</h1>
+        <h1 className="text-3xl font-bold text-[#223c1f]">
+          {serviceFilter === "Vencidos"
+            ? "Socios con Deuda"
+            : "Gestión de Socios"}
+        </h1>
         <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
           <div className="relative">
             <RiFilter3Line className="absolute left-3 top-3 text-gray-400" />
@@ -116,10 +181,11 @@ const ClientList = () => {
               }}
               className="pl-10 p-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#659d3a] outline-none bg-white appearance-none pr-8 cursor-pointer"
             >
-              <option value="Todos">Todos los Servicios</option>
-              <option value="Gym">Solo Gym</option>
-              <option value="Natacion">Solo Natación</option>
-              <option value="Ambos">Gym + Natación</option>
+              <option value="Todos">Todos los Socios</option>
+              <option value="Activos">Socios al Día</option>
+              <option value="Vencidos">Con Deuda (Parcial/Total)</option>
+              <option value="Gym">Activos en Gym</option>
+              <option value="Natacion">Activos en Natación</option>
             </select>
           </div>
           <div className="relative w-full md:w-64">
@@ -144,15 +210,27 @@ const ClientList = () => {
               <th className="p-4">Nombre</th>
               <th className="p-4">DNI</th>
               <th className="p-4">Servicios</th>
-              <th className="p-4">Vencimiento</th>
-              <th className="p-4">Estado</th>
+              <th className="p-4">Vencimientos</th>
               <th className="p-4 text-center">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {currentClients.map((client) => {
-              const isExpired = new Date(client.fechaVencimiento) < new Date();
-              return (
+            {filteredClients.length === 0 ? (
+              <tr>
+                <td colSpan="5" className="p-12 text-center">
+                  <div className="flex flex-col items-center justify-center text-gray-400">
+                    <RiSearchLine size={48} className="mb-4 opacity-20" />
+                    <p className="text-xl font-medium">
+                      No se encontraron coincidencias
+                    </p>
+                    <p className="text-sm">
+                      Intenta con otro nombre, DNI o cambia el filtro.
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              currentClients.map((client) => (
                 <tr
                   key={client._id}
                   className="hover:bg-gray-50 transition-colors"
@@ -162,37 +240,39 @@ const ClientList = () => {
                   </td>
                   <td className="p-4 text-gray-600">{client.dni}</td>
                   <td className="p-4">
-                    <div className="flex flex-col gap-1">
-                      {client.servicios.gym !== "No" && (
+                    <div className="flex flex-col gap-1 items-start">
+                      {client.servicios.gym.modalidad !== "No" && (
                         <span className="text-[10px] bg-[#659d3a]/10 text-[#659d3a] px-2 py-0.5 rounded-md font-bold border border-[#659d3a]/20">
-                          GYM: {client.servicios.gym}
+                          GYM ({client.servicios.gym.modalidad})
                         </span>
                       )}
-                      {client.servicios.natacion !== "No" && (
+                      {client.servicios.natacion.modalidad !== "No" && (
                         <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md font-bold border border-blue-200">
-                          NATA: {client.servicios.natacion}
+                          NATA ({client.servicios.natacion.modalidad})
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="p-4 text-gray-600">
-                    {new Date(client.fechaVencimiento).toLocaleDateString()}
-                  </td>
                   <td className="p-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        isExpired
-                          ? "bg-red-100 text-red-600"
-                          : "bg-[#659d3a]/20 text-[#659d3a]"
-                      }`}
-                    >
-                      {isExpired ? "VENCIDO" : "ACTIVO"}
-                    </span>
+                    <div className="flex flex-col gap-1">
+                      {client.servicios.gym.modalidad !== "No" && (
+                        <RenderDate
+                          date={client.servicios.gym.vencimiento}
+                          label="GYM"
+                        />
+                      )}
+                      {client.servicios.natacion.modalidad !== "No" && (
+                        <RenderDate
+                          date={client.servicios.natacion.vencimiento}
+                          label="NATA"
+                        />
+                      )}
+                    </div>
                   </td>
                   <td className="p-4 flex justify-center gap-2">
                     <button
-                      onClick={() => handleRenew(client._id)}
-                      title="Renovar 30 días"
+                      onClick={() => handleRenew(client)}
+                      title="Renovar suscripción"
                       className="p-2 text-[#659d3a] hover:bg-green-50 rounded-lg transition-colors"
                     >
                       <RiRefreshLine size={20} />
@@ -215,8 +295,8 @@ const ClientList = () => {
                     </button>
                   </td>
                 </tr>
-              );
-            })}
+              ))
+            )}
           </tbody>
         </table>
         {totalPages > 1 && (

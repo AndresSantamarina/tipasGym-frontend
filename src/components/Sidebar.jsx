@@ -1,4 +1,4 @@
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   RiDashboardLine,
   RiTeamLine,
@@ -8,10 +8,12 @@ import {
   RiHistoryLine,
 } from "react-icons/ri";
 import logo from "../assets/logo.jpeg";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 const Sidebar = () => {
-  const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useContext(AuthContext);
 
   const menuItems = [
     { path: "/admin/dashboard", icon: <RiDashboardLine />, label: "Inicio" },
@@ -25,13 +27,12 @@ const Sidebar = () => {
       icon: <RiUserAddLine />,
       label: "Agregar Cliente",
     },
-    { path: "/admin/historial", icon: <RiHistoryLine />, label: "Historial" }, // NUEVO
+    { path: "/admin/historial", icon: <RiHistoryLine />, label: "Historial" },
     { path: "/check-in", icon: <RiQrScan2Line />, label: "Modo Check-In" },
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
+    logout();
   };
 
   return (
