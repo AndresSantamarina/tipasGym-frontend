@@ -114,18 +114,16 @@ const AccessHistory = () => {
       </div>
 
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
+        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300">
+          <table className="w-full min-w-[800px] text-left">
             <thead className="bg-[#223c1f] text-white">
               <tr>
-                <th className="p-5 font-semibold">Cliente</th>
-                <th className="p-5 font-semibold">DNI</th>
-                <th className="p-5 font-semibold">Fecha</th>
-                <th className="p-5 font-semibold">Hora</th>
-                <th className="p-5 font-semibold text-sm">
-                  Servicios Contratados
-                </th>
-                <th className="p-5 font-semibold">Vencimientos</th>
+                <th className="p-4 md:p-5 font-semibold">Cliente</th>
+                <th className="p-4 md:p-5 font-semibold">DNI</th>
+                <th className="p-4 md:p-5 font-semibold">Fecha</th>
+                <th className="p-4 md:p-5 font-semibold">Hora</th>
+                <th className="p-4 md:p-5 font-semibold text-sm">Servicios</th>
+                <th className="p-4 md:p-5 font-semibold">Vencimientos</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -135,17 +133,17 @@ const AccessHistory = () => {
                     key={log._id}
                     className="hover:bg-[#fbf4e4]/30 transition-colors"
                   >
-                    <td className="p-5 font-bold text-[#223c1f]">
+                    <td className="p-4 md:p-5 font-bold text-[#223c1f]">
                       {log.nombre}
                     </td>
-                    <td className="p-5 text-gray-500">{log.dni}</td>
-                    <td className="p-5 text-gray-700">
+                    <td className="p-4 md:p-5 text-gray-500">{log.dni}</td>
+                    <td className="p-4 md:p-5 text-gray-700">
                       <span className="flex items-center gap-1">
                         <RiCalendarLine className="text-[#659d3a]" />
                         {new Date(log.fecha).toLocaleDateString()}
                       </span>
                     </td>
-                    <td className="p-5 text-gray-700">
+                    <td className="p-4 md:p-5 text-gray-700">
                       <span className="flex items-center gap-1 font-bold">
                         <RiTimeLine className="text-[#659d3a]" />
                         {new Date(log.fecha).toLocaleTimeString([], {
@@ -155,7 +153,7 @@ const AccessHistory = () => {
                         hs
                       </span>
                     </td>
-                    <td className="p-5">
+                    <td className="p-4 md:p-5">
                       <div className="flex flex-col gap-1 items-start">
                         {log.clientDetails?.servicios?.gym?.modalidad !==
                           "No" && (
@@ -172,7 +170,7 @@ const AccessHistory = () => {
                         )}
                       </div>
                     </td>
-                    <td className="p-5">
+                    <td className="p-4 md:p-5">
                       <div className="w-48">
                         {log.clientDetails?.servicios?.gym?.modalidad !==
                           "No" && (
@@ -211,28 +209,28 @@ const AccessHistory = () => {
         </div>
 
         {totalPages > 1 && (
-          <div className="p-4 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-gray-100 bg-gray-50/50">
-            <p className="text-sm text-gray-500 font-medium">
+          <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-100 bg-gray-50/50">
+            <p className="text-xs md:text-sm text-gray-500 font-medium order-2 sm:order-1">
               Mostrando {indexOfFirstItem + 1} a{" "}
               {Math.min(indexOfLastItem, filteredLogs.length)} de{" "}
               {filteredLogs.length} ingresos
             </p>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 order-1 sm:order-2">
               <button
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((prev) => prev - 1)}
-                className="px-4 py-2 bg-white border border-gray-200 rounded-xl disabled:opacity-30 hover:bg-gray-50 transition-colors shadow-sm font-bold text-sm"
+                className="px-3 py-2 md:px-4 bg-white border border-gray-200 rounded-xl disabled:opacity-30 text-xs md:text-sm font-bold shadow-sm"
               >
                 Anterior
               </button>
-              <div className="flex items-center px-4 bg-[#223c1f] text-white rounded-xl text-sm font-bold">
+              <div className="flex items-center px-3 md:px-4 bg-[#223c1f] text-white rounded-xl text-xs md:text-sm font-bold">
                 {currentPage} / {totalPages}
               </div>
               <button
                 disabled={currentPage === totalPages}
                 onClick={() => setCurrentPage((prev) => prev + 1)}
-                className="px-4 py-2 bg-white border border-gray-200 rounded-xl disabled:opacity-30 hover:bg-gray-50 transition-colors shadow-sm font-bold text-sm"
+                className="px-3 py-2 md:px-4 bg-white border border-gray-200 rounded-xl disabled:opacity-30 text-xs md:text-sm font-bold shadow-sm"
               >
                 Siguiente
               </button>

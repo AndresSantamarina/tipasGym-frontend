@@ -48,11 +48,11 @@ const CheckIn = () => {
       <img
         src={logo}
         alt="Logo"
-        className="w-32 h-32 rounded-full mb-8 shadow-lg border-4 border-[#659d3a]"
+        className="w-24 h-24 md:w-32 md:h-32 rounded-full mb-6 md:mb-8 shadow-lg border-4 border-[#659d3a]"
       />
 
-      <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-xl text-center border-t-8 border-[#223c1f]">
-        <h1 className="text-3xl font-bold text-[#223c1f] mb-6">
+      <div className="bg-white p-6 md:p-8 rounded-3xl shadow-2xl w-full max-w-xl text-center border-t-8 border-[#223c1f]">
+        <h1 className="text-2xl md:text-3xl font-bold text-[#223c1f] mb-6">
           Control de Acceso
         </h1>
 
@@ -67,7 +67,7 @@ const CheckIn = () => {
             })}
             type="text"
             maxLength={8}
-            className={`w-full text-center text-4xl p-4 rounded-2xl border-2 outline-none transition-all mb-4 ${
+            className={`w-full text-center text-2xl md:text-4xl p-4 rounded-2xl border-2 outline-none transition-all mb-4 ${
               errors.dni
                 ? "border-red-500"
                 : "border-gray-200 focus:border-[#659d3a]"
@@ -75,11 +75,14 @@ const CheckIn = () => {
             placeholder="INGRESE SU DNI"
             autoFocus
             autoComplete="off"
+            inputMode="numeric"
           />
           {errors.dni && (
-            <p className="text-red-500 font-bold mb-4">{errors.dni.message}</p>
+            <p className="text-red-500 font-bold mb-4 text-sm">
+              {errors.dni.message}
+            </p>
           )}
-          <button className="w-full bg-[#223c1f] text-white py-4 rounded-2xl text-xl font-bold hover:bg-[#659d3a] transition-all">
+          <button className="w-full bg-[#223c1f] text-white py-4 rounded-2xl text-lg md:text-xl font-bold hover:bg-[#659d3a] transition-all">
             INGRESAR
           </button>
         </form>
@@ -90,12 +93,12 @@ const CheckIn = () => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className={`p-6 rounded-3xl text-white ${getStatusColor(cliente.statusGlobal)}`}
+              className={`p-4 md:p-6 rounded-3xl text-white ${getStatusColor(cliente.statusGlobal)}`}
             >
-              <h2 className="text-4xl font-black mb-2 tracking-tighter uppercase">
+              <h2 className="text-2xl md:text-4xl font-black mb-2 tracking-tighter uppercase">
                 {cliente.statusGlobal}
               </h2>
-              <p className="text-2xl uppercase font-medium border-b border-white/20 pb-4 mb-4">
+              <p className="text-lg md:text-2xl uppercase font-medium border-b border-white/20 pb-4 mb-4">
                 {cliente.nombre}
               </p>
 

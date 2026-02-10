@@ -203,104 +203,106 @@ const ClientList = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-[#223c1f] text-white">
-            <tr>
-              <th className="p-4">Nombre</th>
-              <th className="p-4">DNI</th>
-              <th className="p-4">Servicios</th>
-              <th className="p-4">Vencimientos</th>
-              <th className="p-4 text-center">Acciones</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {filteredClients.length === 0 ? (
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[700px]">
+            <thead className="bg-[#223c1f] text-white">
               <tr>
-                <td colSpan="5" className="p-12 text-center">
-                  <div className="flex flex-col items-center justify-center text-gray-400">
-                    <RiSearchLine size={48} className="mb-4 opacity-20" />
-                    <p className="text-xl font-medium">
-                      No se encontraron coincidencias
-                    </p>
-                    <p className="text-sm">
-                      Intenta con otro nombre, DNI o cambia el filtro.
-                    </p>
-                  </div>
-                </td>
+                <th className="p-4 whitespace-nowrap">Nombre</th>
+                <th className="p-4 whitespace-nowrap">DNI</th>
+                <th className="p-4 whitespace-nowrap">Servicios</th>
+                <th className="p-4 whitespace-nowrap">Vencimientos</th>
+                <th className="p-4 text-center whitespace-nowrap">Acciones</th>
               </tr>
-            ) : (
-              currentClients.map((client) => (
-                <tr
-                  key={client._id}
-                  className="hover:bg-gray-50 transition-colors"
-                >
-                  <td className="p-4 font-medium text-[#223c1f]">
-                    {client.nombre}
-                  </td>
-                  <td className="p-4 text-gray-600">{client.dni}</td>
-                  <td className="p-4">
-                    <div className="flex flex-col gap-1 items-start">
-                      {client.servicios.gym.modalidad !== "No" && (
-                        <span className="text-[10px] bg-[#659d3a]/10 text-[#659d3a] px-2 py-0.5 rounded-md font-bold border border-[#659d3a]/20">
-                          GYM ({client.servicios.gym.modalidad})
-                        </span>
-                      )}
-                      {client.servicios.natacion.modalidad !== "No" && (
-                        <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md font-bold border border-blue-200">
-                          NATA ({client.servicios.natacion.modalidad})
-                        </span>
-                      )}
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {filteredClients.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="p-12 text-center">
+                    <div className="flex flex-col items-center justify-center text-gray-400">
+                      <RiSearchLine size={48} className="mb-4 opacity-20" />
+                      <p className="text-xl font-medium">
+                        No se encontraron coincidencias
+                      </p>
+                      <p className="text-sm">
+                        Intenta con otro nombre, DNI o cambia el filtro.
+                      </p>
                     </div>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex flex-col gap-1">
-                      {client.servicios.gym.modalidad !== "No" && (
-                        <RenderDate
-                          date={client.servicios.gym.vencimiento}
-                          label="GYM"
-                        />
-                      )}
-                      {client.servicios.natacion.modalidad !== "No" && (
-                        <RenderDate
-                          date={client.servicios.natacion.vencimiento}
-                          label="NATA"
-                        />
-                      )}
-                    </div>
-                  </td>
-                  <td className="p-4 flex justify-center gap-2">
-                    <button
-                      onClick={() => handleRenew(client)}
-                      title="Renovar suscripción"
-                      className="p-2 text-[#659d3a] hover:bg-green-50 rounded-lg transition-colors"
-                    >
-                      <RiRefreshLine size={20} />
-                    </button>
-                    <button
-                      onClick={() =>
-                        navigate(`/admin/editar/${client._id}`, {
-                          state: client,
-                        })
-                      }
-                      title="Editar cliente"
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                    >
-                      <RiEditLine size={20} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(client._id)}
-                      title="Eliminar cliente"
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      <RiDeleteBin7Line size={20} />
-                    </button>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                currentClients.map((client) => (
+                  <tr
+                    key={client._id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="p-4 font-medium text-[#223c1f]">
+                      {client.nombre}
+                    </td>
+                    <td className="p-4 text-gray-600">{client.dni}</td>
+                    <td className="p-4">
+                      <div className="flex flex-col gap-1 items-start">
+                        {client.servicios.gym.modalidad !== "No" && (
+                          <span className="text-[10px] bg-[#659d3a]/10 text-[#659d3a] px-2 py-0.5 rounded-md font-bold border border-[#659d3a]/20">
+                            GYM ({client.servicios.gym.modalidad})
+                          </span>
+                        )}
+                        {client.servicios.natacion.modalidad !== "No" && (
+                          <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md font-bold border border-blue-200">
+                            NATA ({client.servicios.natacion.modalidad})
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex flex-col gap-1">
+                        {client.servicios.gym.modalidad !== "No" && (
+                          <RenderDate
+                            date={client.servicios.gym.vencimiento}
+                            label="GYM"
+                          />
+                        )}
+                        {client.servicios.natacion.modalidad !== "No" && (
+                          <RenderDate
+                            date={client.servicios.natacion.vencimiento}
+                            label="NATA"
+                          />
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-4 flex justify-center gap-2">
+                      <button
+                        onClick={() => handleRenew(client)}
+                        title="Renovar suscripción"
+                        className="p-2 text-[#659d3a] hover:bg-green-50 rounded-lg transition-colors"
+                      >
+                        <RiRefreshLine size={20} />
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigate(`/admin/editar/${client._id}`, {
+                            state: client,
+                          })
+                        }
+                        title="Editar cliente"
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      >
+                        <RiEditLine size={20} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(client._id)}
+                        title="Eliminar cliente"
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <RiDeleteBin7Line size={20} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
         {totalPages > 1 && (
           <div className="p-4 bg-gray-50 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-gray-100">
             <span className="text-sm text-gray-500 font-medium">

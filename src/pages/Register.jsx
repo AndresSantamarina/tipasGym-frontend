@@ -103,7 +103,7 @@ const Register = () => {
 
         <div className="mt-6 text-center">
           <Link
-            to="/login"
+            to="/"
             className="text-[#659d3a] font-bold hover:underline text-sm"
           >
             ¿Ya tienes cuenta? Inicia sesión
