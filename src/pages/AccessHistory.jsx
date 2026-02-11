@@ -48,6 +48,16 @@ const AccessHistory = () => {
     );
   };
 
+  const RenderStartDate = ({ date, label }) => {
+    if (!date) return null;
+    return (
+      <div className="text-[10px] flex justify-between gap-2 px-2 py-0.5 rounded mb-1 bg-blue-50 text-blue-700 border border-blue-100">
+        <span className="font-bold">{label} INICIO:</span>
+        <span>{new Date(date).toLocaleDateString()}</span>
+      </div>
+    );
+  };
+
   const filteredLogs = logs.filter(
     (log) =>
       log.nombre.toLowerCase().includes(searchDni.toLowerCase()) ||
@@ -174,19 +184,31 @@ const AccessHistory = () => {
                       <div className="w-48">
                         {log.clientDetails?.servicios?.gym?.modalidad !==
                           "No" && (
-                          <RenderDate
-                            date={log.clientDetails.servicios.gym.vencimiento}
-                            label="GYM"
-                          />
+                          <>
+                            <RenderStartDate
+                              date={log.clientDetails.servicios.gym.inicio}
+                              label="GYM"
+                            />
+                            <RenderDate
+                              date={log.clientDetails.servicios.gym.vencimiento}
+                              label="GYM VENCE"
+                            />
+                          </>
                         )}
                         {log.clientDetails?.servicios?.natacion?.modalidad !==
                           "No" && (
-                          <RenderDate
-                            date={
-                              log.clientDetails.servicios.natacion.vencimiento
-                            }
-                            label="NATA"
-                          />
+                          <>
+                            <RenderStartDate
+                              date={log.clientDetails.servicios.natacion.inicio}
+                              label="NATA"
+                            />
+                            <RenderDate
+                              date={
+                                log.clientDetails.servicios.natacion.vencimiento
+                              }
+                              label="NATA VENCE"
+                            />
+                          </>
                         )}
                       </div>
                     </td>

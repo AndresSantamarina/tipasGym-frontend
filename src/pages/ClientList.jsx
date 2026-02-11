@@ -149,15 +149,29 @@ const ClientList = () => {
     indexOfLastItem,
   );
 
-  const RenderDate = ({ date, label }) => {
-    if (!date) return null;
-    const isExpired = new Date(date) < new Date();
+  const RenderDate = ({ inicio, vencimiento, label }) => {
+    if (!vencimiento || !inicio) return null;
+    const isExpired = new Date(vencimiento) < new Date();
+
     return (
       <div
-        className={`text-xs flex justify-between gap-2 px-2 py-1 rounded ${isExpired ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"}`}
+        className={`text-[10px] mb-1 p-2 rounded-lg border ${
+          isExpired
+            ? "bg-red-50 border-red-100 text-red-600"
+            : "bg-green-50 border-green-100 text-green-700"
+        }`}
       >
-        <span className="font-bold">{label}:</span>
-        <span>{new Date(date).toLocaleDateString()}</span>
+        <div className="font-bold border-b border-current/10 mb-1">{label}</div>
+        <div className="flex flex-col">
+          <span>
+            <span className="opacity-70">Desde:</span>{" "}
+            {new Date(inicio).toLocaleDateString()}
+          </span>
+          <span>
+            <span className="opacity-70">Hasta:</span>{" "}
+            {new Date(vencimiento).toLocaleDateString()}
+          </span>
+        </div>
       </div>
     );
   };
@@ -258,13 +272,15 @@ const ClientList = () => {
                       <div className="flex flex-col gap-1">
                         {client.servicios.gym.modalidad !== "No" && (
                           <RenderDate
-                            date={client.servicios.gym.vencimiento}
+                            inicio={client.servicios.gym.inicio}
+                            vencimiento={client.servicios.gym.vencimiento}
                             label="GYM"
                           />
                         )}
                         {client.servicios.natacion.modalidad !== "No" && (
                           <RenderDate
-                            date={client.servicios.natacion.vencimiento}
+                            inicio={client.servicios.natacion.inicio}
+                            vencimiento={client.servicios.natacion.vencimiento}
                             label="NATA"
                           />
                         )}

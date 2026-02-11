@@ -33,7 +33,6 @@ const ClientForm = () => {
   });
 
   const onSubmit = async (data) => {
-
     if (data.servicios.gym === "No" && data.servicios.natacion === "No") {
       return Swal.fire({
         icon: "error",
@@ -42,14 +41,26 @@ const ClientForm = () => {
         confirmButtonColor: "#223c1f",
       });
     }
-    
+
     try {
       const payload = {
         nombre: data.nombre,
         dni: data.dni,
         servicios: {
-          gym: { modalidad: data.servicios.gym },
-          natacion: { modalidad: data.servicios.natacion },
+          gym: {
+            modalidad: data.servicios.gym,
+            inicio: isEdit ? location.state.servicios.gym.inicio : null,
+            vencimiento: isEdit
+              ? location.state.servicios.gym.vencimiento
+              : null,
+          },
+          natacion: {
+            modalidad: data.servicios.natacion,
+            inicio: isEdit ? location.state.servicios.natacion.inicio : null,
+            vencimiento: isEdit
+              ? location.state.servicios.natacion.vencimiento
+              : null,
+          },
         },
       };
 

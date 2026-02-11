@@ -119,8 +119,14 @@ const CheckIn = () => {
                       >
                         {cliente.servicios.gym.activo ? "AL DÍA" : "VENCIDO"}
                       </span>
-                      <p className="text-[10px] mt-1">
-                        Vence:{" "}
+                      <p className="text-[10px] mt-2 opacity-90">
+                        Desde:{" "}
+                        {new Date(
+                          cliente.servicios.gym.inicio,
+                        ).toLocaleDateString()}
+                      </p>
+                      <p className="text-[10px] font-bold">
+                        Hasta:{" "}
                         {new Date(
                           cliente.servicios.gym.vencimiento,
                         ).toLocaleDateString()}
@@ -146,8 +152,14 @@ const CheckIn = () => {
                           ? "AL DÍA"
                           : "VENCIDO"}
                       </span>
-                      <p className="text-[10px] mt-1">
-                        Vence:{" "}
+                      <p className="text-[10px] mt-2 opacity-90">
+                        Desde:{" "}
+                        {new Date(
+                          cliente.servicios.natacion.inicio,
+                        ).toLocaleDateString()}
+                      </p>
+                      <p className="text-[10px] font-bold">
+                        Hasta:{" "}
                         {new Date(
                           cliente.servicios.natacion.vencimiento,
                         ).toLocaleDateString()}
