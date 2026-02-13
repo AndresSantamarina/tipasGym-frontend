@@ -223,9 +223,16 @@ const Dashboard = () => {
             </div>
 
             <p className="mt-6 text-center text-gray-400 text-xs italic">
-              Se consideran{" "}
-              <span className="text-yellow-600 font-bold">Parciales</span> a las
+              <span className="text-green-600 font-bold">Al día</span>: cuotas
+              pagadas en tiempo y forma.
+            </p>
+            <p className="text-center text-gray-400 text-xs italic">
+              <span className="text-yellow-600 font-bold">Parciales</span>:
               cuotas sin pagar dentro del período de gracia.
+            </p>
+            <p className="text-center text-gray-400 text-xs italic">
+              <span className="text-red-600 font-bold">Vencidas</span>: cuotas
+              sin pagar fuera del período de gracia, y/o vencidas por fecha.
             </p>
           </div>
         </div>
