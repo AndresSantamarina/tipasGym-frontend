@@ -224,10 +224,8 @@ const Dashboard = () => {
 
             <p className="mt-6 text-center text-gray-400 text-xs italic">
               Se consideran{" "}
-              <span className="text-yellow-600 font-bold">Parciales</span> a los
-              socios que tienen deudas pendientes (dentro del periodo de gracia)
-              pero siguen habilitados, o a socios que tienen al menos uno de sus
-              servicios en deuda.
+              <span className="text-yellow-600 font-bold">Parciales</span> a las
+              cuotas sin pagar dentro del período de gracia.
             </p>
           </div>
         </div>
