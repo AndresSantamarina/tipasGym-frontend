@@ -7,6 +7,8 @@ import {
   RiSearchLine,
   RiRefreshLine,
   RiFilter3Line,
+  RiArrowLeftDoubleLine,
+  RiArrowRightDoubleLine,
 } from "react-icons/ri";
 import AdminLayout from "../layouts/AdminLayout";
 import clientAxios from "../api/clientAxios";
@@ -60,128 +62,166 @@ const ClientList = () => {
   };
 
   const handleRenew = async (client) => {
-    const inputOptions = {};
-    if (client.servicios.gym.modalidad !== "No") {
-      inputOptions.gym = "🏋️ Gimnasio";
-    }
-    if (client.servicios.natacion.modalidad !== "No") {
-      inputOptions.natacion = "🏊 Natación";
+    const serviciosActivos = Object.keys(client.servicios).filter(
+      (key) => client.servicios[key].modalidad !== "No",
+    );
+
+    if (serviciosActivos.length === 0) {
+      return Swal.fire(
+        "Error",
+        "Este cliente no tiene servicios activos",
+        "info",
+      );
     }
 
-    if (Object.keys(inputOptions).length === 0) {
-      Swal.fire("Error", "Este cliente no tiene servicios activos", "info");
-      return;
-    }
-    const { value: servicioSeleccionado } = await Swal.fire({
+    const { value: formValues } = await Swal.fire({
       title: "Renovar Suscripción",
-      text: "Selecciona qué servicio quieres renovar por 30 días:",
-      input: "radio",
-      inputOptions: inputOptions,
-      inputValidator: (value) => {
-        if (!value) {
-          return "Debes seleccionar una opción";
-        }
-      },
+      html: `
+        <div class="flex flex-col gap-4 text-left">
+          <div>
+            <label class="text-xs font-bold text-gray-500 uppercase">Servicio a renovar</label>
+            <select id="swal-service" class="swal2-input w-full m-0">
+              ${serviciosActivos.map((s) => `<option value="${s}">${s.toUpperCase()}</option>`).join("")}
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-500 uppercase">Precio Total ($)</label>
+            <input id="swal-total" type="number" class="swal2-input w-full m-0" placeholder="Ej: 30000">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-500 uppercase">Monto que paga hoy ($)</label>
+            <input id="swal-paid" type="number" class="swal2-input w-full m-0" placeholder="Ej: 15000">
+          </div>
+        </div>
+      `,
+      focusConfirm: false,
       showCancelButton: true,
       confirmButtonColor: "#659d3a",
       confirmButtonText: "Renovar",
+      preConfirm: () => {
+        const total = document.getElementById("swal-total").value;
+        const paid = document.getElementById("swal-paid").value;
+        if (!total || !paid) {
+          Swal.showValidationMessage("Por favor completa todos los campos");
+        }
+        return {
+          servicio: document.getElementById("swal-service").value,
+          precioTotal: Number(total),
+          montoPagado: Number(paid),
+        };
+      },
     });
 
-    if (servicioSeleccionado) {
+    if (formValues) {
       try {
-        const res = await clientAxios.put(`/clients/renew/${client._id}`, {
-          servicio: servicioSeleccionado,
-        });
-        setClients((prevClients) =>
-          prevClients.map((c) => (c._id === client._id ? res.data.client : c)),
+        const res = await clientAxios.put(
+          `/clients/renew/${client._id}`,
+          formValues,
         );
-        Swal.fire({
-          title: "¡Renovado!",
-          text: res.data.msg,
-          icon: "success",
-          confirmButtonColor: "#659d3a",
-        });
+        setClients(
+          clients.map((c) => (c._id === client._id ? res.data.client : c)),
+        );
+        Swal.fire("¡Éxito!", "Suscripción renovada por 30 días", "success");
       } catch (error) {
-        Swal.fire("Error", "No se pudo procesar la renovación", "error");
+        Swal.fire("Error", "No se pudo renovar", "error");
       }
     }
   };
 
-  const filteredClients = clients.filter((c) => {
+  const getStatus = (servicio) => {
+    if (servicio.modalidad === "No") return null;
     const hoy = new Date();
+    const vencimiento = new Date(servicio.vencimiento);
+    const inicio = new Date(servicio.inicio);
+    const fechaLimiteGracia = new Date(inicio);
+    fechaLimiteGracia.setDate(fechaLimiteGracia.getDate() + 12);
+
+    if (hoy > vencimiento)
+      return {
+        label: "VENCIDO",
+        color: "text-red-600 bg-red-50 border-red-100",
+      };
+    if (servicio.montoPagado >= servicio.precioTotal)
+      return {
+        label: "AL DÍA",
+        color: "text-green-600 bg-green-50 border-green-100",
+      };
+    if (hoy <= fechaLimiteGracia)
+      return {
+        label: "GRACIA",
+        color: "text-amber-600 bg-amber-50 border-amber-100",
+      };
+
+    return {
+      label: "DEUDA",
+      color: "text-red-600 bg-red-50 border-red-100 font-black",
+    };
+  };
+
+  const filteredClients = clients.filter((c) => {
     const matchesSearch =
       c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.dni.includes(searchTerm);
-    const hasGym = c.servicios.gym.modalidad !== "No";
-    const hasNata = c.servicios.natacion.modalidad !== "No";
-    const gymVencido =
-      hasGym &&
-      (!c.servicios.gym.vencimiento ||
-        new Date(c.servicios.gym.vencimiento) < hoy);
-    const nataVencida =
-      hasNata &&
-      (!c.servicios.natacion.vencimiento ||
-        new Date(c.servicios.natacion.vencimiento) < hoy);
-    const gymActivo = hasGym && !gymVencido;
-    const nataActiva = hasNata && !nataVencida;
+    if (serviceFilter === "Todos") return matchesSearch;
 
-    let matchesFilter = true;
+    const servicios = Object.values(c.servicios).filter(
+      (s) => s.modalidad !== "No",
+    );
 
-    if (serviceFilter === "Gym") matchesFilter = gymActivo;
-    if (serviceFilter === "Natacion") matchesFilter = nataActiva;
-    if (serviceFilter === "Ambos") matchesFilter = hasGym && hasNata;
-    if (serviceFilter === "Activos") {
-      const totalContratados = (hasGym ? 1 : 0) + (hasNata ? 1 : 0);
-      const totalActivos = (gymActivo ? 1 : 0) + (nataActiva ? 1 : 0);
-      matchesFilter = totalContratados > 0 && totalActivos === totalContratados;
-    }
     if (serviceFilter === "Vencidos") {
-      matchesFilter = gymVencido || nataVencida;
+      return (
+        matchesSearch &&
+        servicios.some((s) => {
+          const status = getStatus(s);
+          return status.label === "VENCIDO" || status.label === "DEUDA";
+        })
+      );
     }
-    return matchesSearch && matchesFilter;
+
+    if (serviceFilter === "Parciales") {
+      return (
+        matchesSearch &&
+        servicios.some((s) => {
+          const status = getStatus(s);
+          return status.label === "GRACIA";
+        })
+      );
+    }
+
+    if (serviceFilter === "Activos") {
+      return (
+        matchesSearch &&
+        servicios.some((s) => {
+          const status = getStatus(s);
+          return status.label === "AL DÍA";
+        })
+      );
+    }
+
+    if (serviceFilter === "Gym")
+      return matchesSearch && c.servicios.gym.modalidad !== "No";
+    if (serviceFilter === "Natacion")
+      return matchesSearch && c.servicios.natacion.modalidad !== "No";
+    if (serviceFilter === "Kids")
+      return matchesSearch && c.servicios.kids.modalidad !== "No";
+    if (serviceFilter === "Profe")
+      return matchesSearch && c.servicios.profe.modalidad !== "No";
+
+    return matchesSearch;
   });
 
   const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentClients = filteredClients.slice(
-    indexOfFirstItem,
-    indexOfLastItem,
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
   );
-
-  const RenderDate = ({ inicio, vencimiento, label }) => {
-    if (!vencimiento || !inicio) return null;
-    const isExpired = new Date(vencimiento) < new Date();
-
-    return (
-      <div
-        className={`text-[10px] mb-1 p-2 rounded-lg border ${
-          isExpired
-            ? "bg-red-50 border-red-100 text-red-600"
-            : "bg-green-50 border-green-100 text-green-700"
-        }`}
-      >
-        <div className="font-bold border-b border-current/10 mb-1">{label}</div>
-        <div className="flex flex-col">
-          <span>
-            <span className="opacity-70">Desde:</span>{" "}
-            {new Date(inicio).toLocaleDateString()}
-          </span>
-          <span>
-            <span className="opacity-70">Hasta:</span>{" "}
-            {new Date(vencimiento).toLocaleDateString()}
-          </span>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <AdminLayout>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <h1 className="text-3xl font-bold text-[#223c1f]">
           {serviceFilter === "Vencidos"
-            ? "Socios con Deuda"
+            ? "Socios con Deuda / Vencidos"
             : "Gestión de Socios"}
         </h1>
         <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
@@ -196,10 +236,13 @@ const ClientList = () => {
               className="pl-10 p-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#659d3a] outline-none bg-white appearance-none pr-8 cursor-pointer"
             >
               <option value="Todos">Todos los Socios</option>
-              <option value="Activos">Socios al Día</option>
-              <option value="Vencidos">Con Deuda (Parcial/Total)</option>
-              <option value="Gym">Activos en Gym</option>
-              <option value="Natacion">Activos en Natación</option>
+              <option value="Activos">Al día</option>
+              <option value="Parciales">Parciales</option>
+              <option value="Vencidos">Vencidos</option>
+              <option value="Gym">Inscriptos en Gym</option>
+              <option value="Natacion">Inscriptos en Natación</option>
+              <option value="Kids">Inscriptos en Kids</option>
+              <option value="Profe">Inscriptos con Profe</option>
             </select>
           </div>
           <div className="relative w-full md:w-64">
@@ -219,29 +262,21 @@ const ClientList = () => {
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[700px]">
+          <table className="w-full text-left border-collapse min-w-[900px]">
             <thead className="bg-[#223c1f] text-white">
               <tr>
-                <th className="p-4 whitespace-nowrap">Nombre</th>
-                <th className="p-4 whitespace-nowrap">DNI</th>
-                <th className="p-4 whitespace-nowrap">Servicios</th>
-                <th className="p-4 whitespace-nowrap">Vencimientos</th>
-                <th className="p-4 text-center whitespace-nowrap">Acciones</th>
+                <th className="p-4">Socio</th>
+                <th className="p-4">Servicios</th>
+                <th className="p-4">Pagos</th>
+                <th className="p-4">Vencimiento</th>
+                <th className="p-4 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {filteredClients.length === 0 ? (
+              {currentClients.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="p-12 text-center">
-                    <div className="flex flex-col items-center justify-center text-gray-400">
-                      <RiSearchLine size={48} className="mb-4 opacity-20" />
-                      <p className="text-xl font-medium">
-                        No se encontraron coincidencias
-                      </p>
-                      <p className="text-sm">
-                        Intenta con otro nombre, DNI o cambia el filtro.
-                      </p>
-                    </div>
+                  <td colSpan="5" className="p-12 text-center text-gray-400">
+                    No hay socios que coincidan.
                   </td>
                 </tr>
               ) : (
@@ -250,46 +285,71 @@ const ClientList = () => {
                     key={client._id}
                     className="hover:bg-gray-50 transition-colors"
                   >
-                    <td className="p-4 font-medium text-[#223c1f]">
-                      {client.nombre}
-                    </td>
-                    <td className="p-4 text-gray-600">{client.dni}</td>
                     <td className="p-4">
-                      <div className="flex flex-col gap-1 items-start">
-                        {client.servicios.gym.modalidad !== "No" && (
-                          <span className="text-[10px] bg-[#659d3a]/10 text-[#659d3a] px-2 py-0.5 rounded-md font-bold border border-[#659d3a]/20">
-                            GYM ({client.servicios.gym.modalidad})
-                          </span>
-                        )}
-                        {client.servicios.natacion.modalidad !== "No" && (
-                          <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md font-bold border border-blue-200">
-                            NATA ({client.servicios.natacion.modalidad})
-                          </span>
+                      <div className="font-bold text-[#223c1f]">
+                        {client.nombre}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        DNI: {client.dni}
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex flex-wrap gap-1">
+                        {Object.entries(client.servicios).map(
+                          ([key, s]) =>
+                            s.modalidad !== "No" && (
+                              <span
+                                key={key}
+                                className="text-[10px] bg-gray-100 px-2 py-0.5 rounded font-bold uppercase"
+                              >
+                                {key}: {s.modalidad}
+                              </span>
+                            ),
                         )}
                       </div>
                     </td>
                     <td className="p-4">
-                      <div className="flex flex-col gap-1">
-                        {client.servicios.gym.modalidad !== "No" && (
-                          <RenderDate
-                            inicio={client.servicios.gym.inicio}
-                            vencimiento={client.servicios.gym.vencimiento}
-                            label="GYM"
-                          />
-                        )}
-                        {client.servicios.natacion.modalidad !== "No" && (
-                          <RenderDate
-                            inicio={client.servicios.natacion.inicio}
-                            vencimiento={client.servicios.natacion.vencimiento}
-                            label="NATA"
-                          />
-                        )}
-                      </div>
+                      {Object.entries(client.servicios).map(([key, s]) => {
+                        const status = getStatus(s);
+                        if (!status) return null;
+                        return (
+                          <div
+                            key={key}
+                            className={`text-[10px] mb-1 p-1 px-2 rounded border flex justify-between ${status.color}`}
+                          >
+                            <span className="font-bold">
+                              {key.toUpperCase()}- Pago:{" "}
+                              {s.fechaPago
+                                ? new Date(s.fechaPago).toLocaleDateString()
+                                : "N/A"}
+                            </span>
+                            <span>
+                              ${s.montoPagado} de ${s.precioTotal}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </td>
+                    <td className="p-4 text-[11px]">
+                      {Object.entries(client.servicios).map(
+                        ([key, s]) =>
+                          s.modalidad !== "No" && (
+                            <div key={key} className="mb-1">
+                              <span className="font-bold opacity-70">
+                                {key.toUpperCase()}:
+                              </span>{" "}
+                              <span>
+                                {new Date(s.inicio).toLocaleDateString()} al{" "}
+                                {new Date(s.vencimiento).toLocaleDateString()}
+                              </span>{" "}
+                            </div>
+                          ),
+                      )}
                     </td>
                     <td className="p-4 flex justify-center gap-2">
                       <button
                         onClick={() => handleRenew(client)}
-                        title="Renovar suscripción"
+                        title="Renovar"
                         className="p-2 text-[#659d3a] hover:bg-green-50 rounded-lg transition-colors"
                       >
                         <RiRefreshLine size={20} />
@@ -300,14 +360,14 @@ const ClientList = () => {
                             state: client,
                           })
                         }
-                        title="Editar cliente"
+                        title="Editar"
                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                       >
                         <RiEditLine size={20} />
                       </button>
                       <button
                         onClick={() => handleDelete(client._id)}
-                        title="Eliminar cliente"
+                        title="Eliminar"
                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       >
                         <RiDeleteBin7Line size={20} />
@@ -319,30 +379,57 @@ const ClientList = () => {
             </tbody>
           </table>
         </div>
+
         {totalPages > 1 && (
-          <div className="p-4 bg-gray-50 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-gray-100">
-            <span className="text-sm text-gray-500 font-medium">
-              Mostrando {indexOfFirstItem + 1} a{" "}
-              {Math.min(indexOfLastItem, filteredClients.length)} de{" "}
-              {filteredClients.length} socios
-            </span>
-            <div className="flex gap-2">
+          <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-100 bg-gray-50/50">
+            <p className="text-xs md:text-sm text-gray-500 font-medium order-2 sm:order-1">
+              Mostrando{" "}
+              <span className="text-[#223c1f] font-bold">
+                {(currentPage - 1) * itemsPerPage + 1}
+              </span>{" "}
+              a{" "}
+              <span className="text-[#223c1f] font-bold">
+                {Math.min(currentPage * itemsPerPage, filteredClients.length)}
+              </span>{" "}
+              de{" "}
+              <span className="text-[#223c1f] font-bold">
+                {filteredClients.length}
+              </span>{" "}
+              socios
+            </p>
+            <div className="flex items-center gap-1 md:gap-2 order-1 sm:order-2">
               <button
                 disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => p - 1)}
-                className="px-4 py-2 bg-white border rounded-xl disabled:opacity-30 font-bold text-sm shadow-sm"
+                onClick={() => setCurrentPage(1)}
+                className="p-2 bg-white border border-gray-200 rounded-xl disabled:opacity-30 hover:bg-gray-50 transition-colors shadow-sm text-[#223c1f]"
+                title="Primera página"
+              >
+                <RiArrowLeftDoubleLine size={18} />
+              </button>
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((prev) => prev - 1)}
+                className="px-3 py-2 bg-white border border-gray-200 rounded-xl disabled:opacity-30 text-xs md:text-sm font-bold shadow-sm hover:bg-gray-50 transition-colors text-[#223c1f]"
               >
                 Anterior
               </button>
-              <div className="flex items-center px-4 bg-[#223c1f] text-white rounded-xl text-sm font-bold">
+              <div className="flex items-center px-3 md:px-4 h-9 bg-[#223c1f] text-white rounded-xl text-xs md:text-sm font-bold shadow-md">
                 {currentPage} / {totalPages}
               </div>
               <button
                 disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((p) => p + 1)}
-                className="px-4 py-2 bg-white border rounded-xl disabled:opacity-30 font-bold text-sm shadow-sm"
+                onClick={() => setCurrentPage((prev) => prev + 1)}
+                className="px-3 py-2 bg-white border border-gray-200 rounded-xl disabled:opacity-30 text-xs md:text-sm font-bold shadow-sm hover:bg-gray-50 transition-colors text-[#223c1f]"
               >
                 Siguiente
+              </button>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(totalPages)}
+                className="p-2 bg-white border border-gray-200 rounded-xl disabled:opacity-30 hover:bg-gray-50 transition-colors shadow-sm text-[#223c1f]"
+                title="Última página"
+              >
+                <RiArrowRightDoubleLine size={18} />
               </button>
             </div>
           </div>

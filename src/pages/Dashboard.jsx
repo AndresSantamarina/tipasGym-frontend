@@ -8,7 +8,10 @@ import {
   RiPieChartLine,
   RiRunLine,
   RiDropLine,
+  RiHandCoinLine,
 } from "react-icons/ri";
+import { TbMoodKidFilled } from "react-icons/tb";
+import { CgGym } from "react-icons/cg";
 import { motion } from "framer-motion";
 import clientAxios from "../api/clientAxios";
 import { useNavigate } from "react-router-dom";
@@ -20,8 +23,12 @@ const Dashboard = () => {
     activos: 0,
     activosGym: 0,
     activosNatacion: 0,
-    vencidos: 0,
+    activosKids: 0,
+    activosProfe: 0,
+    cuotasParciales: 0,
+    totalVencidos: 0,
     ingresosHoy: 0,
+    montoPendiente: 0,
     semaforo: {
       verde: 0,
       amarillo: 0,
@@ -56,29 +63,50 @@ const Dashboard = () => {
       filter: "Todos",
     },
     {
-      label: "Socios Activos",
-      value: stats.activos,
-      icon: <RiUserFollowLine />,
-      color: "bg-[#659d3a]",
-      filter: "Activos",
-    },
-    {
-      label: "Activos Gym",
+      label: "Socios Gym",
       value: stats.activosGym,
-      icon: <RiRunLine />,
+      icon: <CgGym />,
       color: "bg-orange-500",
       filter: "Gym",
     },
     {
-      label: "Activos Natación",
+      label: "Socios Natación",
       value: stats.activosNatacion,
       icon: <RiDropLine />,
       color: "bg-cyan-500",
       filter: "Natacion",
     },
     {
+      label: "Socios Kids",
+      value: stats.activosKids,
+      icon: <TbMoodKidFilled />,
+      color: "bg-pink-500",
+      filter: "Kids",
+    },
+    {
+      label: "Socios Profe",
+      value: stats.activosProfe,
+      icon: <RiRunLine />,
+      color: "bg-purple-500",
+      filter: "Profe",
+    },
+    {
+      label: "Cuotas al día",
+      value: stats.activos,
+      icon: <RiUserFollowLine />,
+      color: "bg-[#659d3a]",
+      filter: "Activos",
+    },
+    {
+      label: "Cuotas Parciales",
+      value: stats.cuotasParciales,
+      icon: <RiHandCoinLine />,
+      color: "bg-yellow-500",
+      filter: "Parciales",
+    },
+    {
       label: "Cuotas Vencidas",
-      value: stats.vencidos,
+      value: stats.totalVencidos,
       icon: <RiUserUnfollowLine />,
       color: "bg-red-500",
       filter: "Vencidos",
@@ -91,7 +119,6 @@ const Dashboard = () => {
       path: "/admin/historial",
     },
   ];
-
   return (
     <AdminLayout>
       <div className="mb-8">
@@ -100,6 +127,7 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+        {" "}
         {cards.map((card, index) => (
           <motion.div
             key={index}
@@ -195,8 +223,11 @@ const Dashboard = () => {
             </div>
 
             <p className="mt-6 text-center text-gray-400 text-xs italic">
-              Se consideran "Parciales" a los socios con Gym o Natación vencido
-              pero el otro activo.
+              Se consideran{" "}
+              <span className="text-yellow-600 font-bold">Parciales</span> a los
+              socios que tienen deudas pendientes (dentro del periodo de gracia)
+              pero siguen habilitados, o a socios que tienen al menos uno de sus
+              servicios en deuda.
             </p>
           </div>
         </div>
@@ -220,6 +251,16 @@ const Dashboard = () => {
                 <p className="text-sm">
                   Recuerda revisar la lista de{" "}
                   <span className="font-bold">vencidos</span> semanalmente.
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="size-2 bg-emerald-400 rounded-full"></div>
+                <p className="text-sm">
+                  Hay un total de{" "}
+                  <span className="font-bold">
+                    ${stats.montoPendiente?.toLocaleString("es-AR")}
+                  </span>{" "}
+                  por cobrar.
                 </p>
               </div>
             </div>
