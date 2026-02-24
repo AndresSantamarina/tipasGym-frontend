@@ -74,38 +74,76 @@ const ClientList = () => {
       );
     }
 
+    const hoy = new Date().toISOString().split("T")[0];
+
     const { value: formValues } = await Swal.fire({
       title: "Renovar Suscripción",
       html: `
-        <div class="flex flex-col gap-4 text-left">
-          <div>
-            <label class="text-xs font-bold text-gray-500 uppercase">Servicio a renovar</label>
-            <select id="swal-service" class="swal2-input w-full m-0">
-              ${serviciosActivos.map((s) => `<option value="${s}">${s.toUpperCase()}</option>`).join("")}
-            </select>
-          </div>
-          <div>
-            <label class="text-xs font-bold text-gray-500 uppercase">Precio Total ($)</label>
-            <input id="swal-total" type="number" class="swal2-input w-full m-0" placeholder="Ej: 30000">
-          </div>
-          <div>
-            <label class="text-xs font-bold text-gray-500 uppercase">Monto que paga hoy ($)</label>
-            <input id="swal-paid" type="number" class="swal2-input w-full m-0" placeholder="Ej: 15000">
-          </div>
+  <div class="flex flex-col gap-5 text-left p-2">
+    <div class="border-b pb-3 mb-1">
+      <p class="text-sm text-gray-500">Configura los detalles de la nueva suscripción para el socio.</p>
+    </div>
+
+    <div>
+      <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1 ml-1">Servicio a renovar</label>
+      <select id="swal-service" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all appearance-none bg-gray-50">
+        ${serviciosActivos.map((s) => `<option value="${s}">${s.toUpperCase()}</option>`).join("")}
+      </select>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1 ml-1">Fecha Inicio</label>
+        <input id="swal-start" type="date" value="${hoy}" 
+          class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all bg-gray-50">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1 ml-1">Duración (Días)</label>
+        <input id="swal-duration" type="number" value="30" 
+          class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all bg-gray-50">
+      </div>
+    </div>
+
+    <div class="space-y-4">
+      <div>
+        <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1 ml-1">Precio Total</label>
+        <div class="relative">
+          <span class="absolute left-4 top-3 text-gray-500 font-medium">$</span>
+          <input id="swal-total" type="number" placeholder="0.00" 
+            class="w-full pl-8 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all bg-gray-50 font-semibold text-gray-700">
         </div>
-      `,
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1 ml-1">Monto que paga hoy</label>
+        <div class="relative">
+          <span class="absolute left-4 top-3 text-gray-500 font-medium">$</span>
+          <input id="swal-paid" type="number" placeholder="0.00" 
+            class="w-full pl-8 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all bg-white font-semibold text-green-700 border-green-200 shadow-sm">
+        </div>
+      </div>
+    </div>
+  </div>
+`,
       focusConfirm: false,
       showCancelButton: true,
       confirmButtonColor: "#659d3a",
       confirmButtonText: "Renovar",
       preConfirm: () => {
+        const servicio = document.getElementById("swal-service").value;
+        const inicio = document.getElementById("swal-start").value;
+        const duracion = document.getElementById("swal-duration").value;
         const total = document.getElementById("swal-total").value;
         const paid = document.getElementById("swal-paid").value;
-        if (!total || !paid) {
+
+        if (!total || !paid || !inicio || !duracion) {
           Swal.showValidationMessage("Por favor completa todos los campos");
         }
+
         return {
-          servicio: document.getElementById("swal-service").value,
+          servicio,
+          inicio,
+          duracion: Number(duracion),
           precioTotal: Number(total),
           montoPagado: Number(paid),
         };
@@ -121,7 +159,11 @@ const ClientList = () => {
         setClients(
           clients.map((c) => (c._id === client._id ? res.data.client : c)),
         );
-        Swal.fire("¡Éxito!", "Suscripción renovada por 30 días", "success");
+        Swal.fire(
+          "¡Éxito!",
+          `Suscripción renovada por ${formValues.duracion} días`,
+          "success",
+        );
       } catch (error) {
         Swal.fire("Error", "No se pudo renovar", "error");
       }
@@ -342,6 +384,10 @@ const ClientList = () => {
                                 {new Date(s.inicio).toLocaleDateString()} al{" "}
                                 {new Date(s.vencimiento).toLocaleDateString()}
                               </span>{" "}
+                              <br />
+                              <span className="font-bold opacity-70">
+                                Duración: {s.duracion || 30} días
+                              </span>
                             </div>
                           ),
                       )}

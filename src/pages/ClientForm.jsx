@@ -15,6 +15,13 @@ const ClientForm = () => {
   const getInitialPrice = (serviceData) => serviceData?.precioTotal || 0;
   const getInitialPaid = (serviceData) => serviceData?.montoPagado || 0;
 
+  const formatDateForInput = (date) => {
+    if (!date) return new Date().toISOString().split("T")[0];
+    const d = new Date(date);
+    d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
+    return d.toISOString().split("T")[0];
+  };
+
   const {
     register,
     handleSubmit,
@@ -31,21 +38,33 @@ const ClientForm = () => {
               modalidad: getInitialValue(location.state.servicios.gym),
               precioTotal: getInitialPrice(location.state.servicios.gym),
               montoPagado: getInitialPaid(location.state.servicios.gym),
+              inicio: formatDateForInput(location.state.servicios.gym?.inicio),
+              duracion: location.state.servicios.gym?.duracion || 30,
             },
             natacion: {
               modalidad: getInitialValue(location.state.servicios.natacion),
               precioTotal: getInitialPrice(location.state.servicios.natacion),
               montoPagado: getInitialPaid(location.state.servicios.natacion),
+              inicio: formatDateForInput(
+                location.state.servicios.natacion?.inicio,
+              ),
+              duracion: location.state.servicios.natacion?.duracion || 30,
             },
             kids: {
               modalidad: getInitialValue(location.state.servicios.kids),
               precioTotal: getInitialPrice(location.state.servicios.kids),
               montoPagado: getInitialPaid(location.state.servicios.kids),
+              inicio: formatDateForInput(location.state.servicios.kids?.inicio),
+              duracion: location.state.servicios.kids?.duracion || 30,
             },
             profe: {
               modalidad: getInitialValue(location.state.servicios.profe),
               precioTotal: getInitialPrice(location.state.servicios.profe),
               montoPagado: getInitialPaid(location.state.servicios.profe),
+              inicio: formatDateForInput(
+                location.state.servicios.profe?.inicio,
+              ),
+              duracion: location.state.servicios.profe?.duracion || 30,
             },
           },
         }
@@ -53,10 +72,34 @@ const ClientForm = () => {
           nombre: "",
           dni: "",
           servicios: {
-            gym: { modalidad: "No", precioTotal: 0, montoPagado: 0 },
-            natacion: { modalidad: "No", precioTotal: 0, montoPagado: 0 },
-            kids: { modalidad: "No", precioTotal: 0, montoPagado: 0 },
-            profe: { modalidad: "No", precioTotal: 0, montoPagado: 0 },
+            gym: {
+              modalidad: "No",
+              precioTotal: 0,
+              montoPagado: 0,
+              inicio: new Date().toISOString().split("T")[0],
+              duracion: 30,
+            },
+            natacion: {
+              modalidad: "No",
+              precioTotal: 0,
+              montoPagado: 0,
+              inicio: new Date().toISOString().split("T")[0],
+              duracion: 30,
+            },
+            kids: {
+              modalidad: "No",
+              precioTotal: 0,
+              montoPagado: 0,
+              inicio: new Date().toISOString().split("T")[0],
+              duracion: 30,
+            },
+            profe: {
+              modalidad: "No",
+              precioTotal: 0,
+              montoPagado: 0,
+              inicio: new Date().toISOString().split("T")[0],
+              duracion: 30,
+            },
           },
         },
   });
@@ -130,7 +173,28 @@ const ClientForm = () => {
         ))}
       </div>
       {watchVal !== "No" && (
-        <div className="space-y-2 pt-2 border-t border-gray-200">
+        <div className="space-y-3 pt-2 border-t border-gray-200 mt-2">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-gray-500 uppercase italic">
+              Fecha de Inicio
+            </span>
+            <input
+              type="date"
+              {...register(`servicios.${name}.inicio`)}
+              className="w-full p-1 text-sm rounded border border-gray-300"
+            />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-gray-500 uppercase italic">
+              Duración (Días)
+            </span>
+            <input
+              type="number"
+              {...register(`servicios.${name}.duracion`)}
+              className="w-full p-1 text-sm rounded border border-gray-300"
+              placeholder="Ej: 30"
+            />
+          </div>
           <div className="flex flex-col">
             <span className="text-[10px] font-bold text-gray-500">
               PRECIO TOTAL (EDITABLE PARA PROMOS)
